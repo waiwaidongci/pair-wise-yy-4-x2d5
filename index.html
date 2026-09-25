@@ -3,152 +3,139 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>水下考古潜水记录</title>
+  <title>水下考古出水交接</title>
   <style>
     * { box-sizing: border-box; }
     body { margin: 0; font-family: Arial, "PingFang SC", sans-serif; background: #e8f2f3; color: #183035; }
     header { padding: 18px 24px; background: #fff; border-bottom: 1px solid #c9dadc; display: flex; justify-content: space-between; gap: 16px; align-items: center; }
     h1 { margin: 0; font-size: 26px; }
+    h2 { margin: 0 0 8px; font-size: 18px; }
+    h3 { margin: 0; }
     button { border: 0; border-radius: 8px; padding: 10px 13px; background: #1d6c78; color: #fff; font-weight: 800; cursor: pointer; }
     button.secondary { background: #64777b; }
+    button.mini { padding: 6px 10px; font-size: 13px; margin-top: 8px; }
     input, select, textarea { width: 100%; border: 1px solid #c9dadc; border-radius: 6px; padding: 9px; font: inherit; background: #fff; }
-    textarea { min-height: 64px; }
+    textarea { min-height: 56px; }
     label { display: block; margin: 9px 0 5px; color: #5c7378; font-size: 13px; }
-    .app { display: grid; grid-template-columns: 1fr 360px; gap: 16px; padding: 16px; }
+    .app { display: grid; grid-template-columns: 1fr 410px; gap: 16px; padding: 16px; align-items: start; }
+    .left-col { display: grid; gap: 16px; }
     .panel { background: #fff; border: 1px solid #c9dadc; border-radius: 8px; padding: 14px; }
-    .map { position: relative; height: calc(100vh - 128px); min-height: 560px; overflow: hidden; background: radial-gradient(circle at 30% 20%, #5fa8b1, #0f5262 55%, #07333f); border-radius: 8px; border: 1px solid #0c4451; cursor: crosshair; }
+    .map { position: relative; height: 480px; overflow: hidden; background: radial-gradient(circle at 30% 20%, #5fa8b1, #0f5262 55%, #07333f); border-radius: 8px; border: 1px solid #0c4451; cursor: crosshair; }
     .wreck { position: absolute; left: 24%; top: 28%; width: 52%; height: 31%; border: 3px solid rgba(220,235,224,.55); border-radius: 48% 44% 42% 50%; transform: rotate(-9deg); }
     .rib { position: absolute; width: 2px; height: 36%; background: rgba(220,235,224,.35); top: 27%; transform: rotate(-9deg); }
-    .marker { position: absolute; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-size: 12px; font-weight: 800; transform: translate(-50%, -50%); border: 2px solid rgba(255,255,255,.7); box-shadow: 0 4px 12px rgba(0,0,0,.35); cursor: pointer; }
+    .marker { position: absolute; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-size: 12px; font-weight: 800; transform: translate(-50%, -50%); border: 2px solid rgba(255,255,255,.7); box-shadow: 0 4px 12px rgba(0,0,0,.35); cursor: pointer; padding: 0; }
     .marker.selected { outline: 4px solid rgba(255,234,124,.75); }
+    .marker .dot { position: absolute; right: -5px; top: -5px; width: 10px; height: 10px; border-radius: 50%; border: 2px solid #fff; }
+    .dot.pending { background: #e14b4b; } .dot.ready { background: #e8b134; } .dot.stored { background: #3ea96a; }
+    .marker .dot:not(.pending):not(.ready):not(.stored) { display: none; }
     .ceramic { background: #b56c38; } .wood { background: #6c4b2f; } .metal { background: #6e7880; } .unknown { background: #725ca6; }
-    .toolbar { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
-    .list { display: grid; gap: 8px; max-height: 330px; overflow: auto; }
-    .item { border: 1px solid #d7e4e5; border-radius: 8px; padding: 10px; cursor: pointer; }
-    .item.active { border-color: #1d6c78; background: #eef8f9; }
-    .timeline { display: grid; gap: 8px; max-height: 240px; overflow: auto; }
-    .pill { display: inline-block; padding: 3px 8px; border: 1px solid #c9dadc; border-radius: 999px; font-size: 12px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
+    .form-grid .span2 { grid-column: 1 / -1; }
+    .toolbar { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+    .chip { display: flex; align-items: center; gap: 6px; border: 1px solid #c9dadc; border-radius: 6px; padding: 3px 6px; font-size: 12px; background: #f4f9fa; }
+    .chip img { width: 34px; height: 34px; object-fit: cover; border-radius: 4px; }
+    .chip button { padding: 1px 7px; background: #64777b; border-radius: 4px; }
+    .filters { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .tabs { display: flex; gap: 8px; margin: 10px 0; }
+    .tab { flex: 1; background: #e4eeef; color: #1d6c78; border: 1px solid #c9dadc; padding: 8px; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 14px; }
+    .tab.active { background: #1d6c78; color: #fff; }
+    .badge { display: inline-block; min-width: 20px; padding: 1px 6px; border-radius: 999px; background: rgba(0,0,0,.15); font-size: 12px; }
+    .notice { margin: 8px 0; padding: 8px 10px; border-radius: 6px; font-size: 13px; background: #fff7e0; border: 1px solid #e8c76a; }
+    .notice.err { background: #fdecec; border-color: #e1a0a0; color: #8a2b2b; }
+    .notice.ok { background: #eef8f0; border-color: #9ecab0; color: #23603b; }
+    .hidden { display: none; }
+    .editor { border: 1px solid #1d6c78; border-radius: 8px; padding: 10px 12px; margin: 10px 0; background: #f4fafb; }
+    .editor h3 { font-size: 15px; margin-bottom: 4px; }
+    .editor label:first-of-type { margin-top: 4px; }
+    .records { display: grid; gap: 10px; max-height: calc(100vh - 330px); overflow: auto; padding-right: 4px; }
+    .group h3 { margin: 12px 0 6px; font-size: 14px; color: #1d6c78; }
+    .card { border: 1px solid #d7e4e5; border-radius: 8px; padding: 10px; background: #fff; }
+    .card .head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .card.pending { border-color: #e1a0a0; background: #fff7f7; }
+    .card.ready { border-color: #e8c76a; background: #fffdf5; }
+    .card.stored { border-color: #9ecab0; background: #f6fbf8; }
+    .pill { display: inline-block; padding: 3px 8px; border: 1px solid #c9dadc; border-radius: 999px; font-size: 12px; background: #fff; }
+    .tag { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+    .tag.pending { background: #fbe0e0; color: #b43d3d; }
+    .tag.ready { background: #fbeecb; color: #8a6212; }
+    .tag.stored { background: #dff0e6; color: #23603b; }
+    .tag.plain { background: #e4eeef; color: #5c7378; }
+    .issues { margin: 6px 0 0; padding-left: 18px; color: #b43d3d; font-size: 13px; }
+    .kv { display: grid; grid-template-columns: 68px 1fr; gap: 2px 8px; font-size: 13px; margin: 8px 0 0; }
+    .kv dt { color: #5c7378; } .kv dd { margin: 0; }
+    .review { display: flex; gap: 6px; margin-top: 8px; }
+    .review input { flex: 1; } .review button { white-space: nowrap; padding: 8px 10px; }
+    .hist { margin-top: 8px; border-top: 1px dashed #c9dadc; padding-top: 6px; font-size: 12px; color: #5c7378; display: grid; gap: 2px; }
     .muted { color: #5c7378; font-size: 13px; }
-    @media (max-width: 980px) { header { display: block; } .app { grid-template-columns: 1fr; } .map { height: 560px; } }
+    .empty { padding: 18px; text-align: center; }
+    @media (max-width: 980px) { header { display: block; } .app { grid-template-columns: 1fr; } .records { max-height: none; } }
   </style>
 </head>
 <body>
   <header>
-    <div><h1>水下考古潜水记录</h1><div class="muted">点击沉船平面图添加标记，筛选、编辑并导出JSON。</div></div>
-    <button id="exportBtn">导出JSON</button>
+    <div><h1>水下考古出水交接</h1><div class="muted">地图登记标记，判定交接单，复核后入库；按潜次查看待交接、异常与入库记录。</div></div>
+    <button id="exportBtn">导出当前记录</button>
   </header>
   <main class="app">
-    <section class="panel">
-      <div class="map" id="map"><div class="wreck"></div></div>
-    </section>
-    <aside class="panel">
-      <div class="toolbar">
-        <select id="filter"><option value="">全部类型</option><option value="ceramic">陶片</option><option value="wood">木构件</option><option value="metal">金属件</option><option value="unknown">未知物</option></select>
-        <select id="view"><option value="list">标记列表</option><option value="timeline">潜次时间线</option></select>
-      </div>
-      <form id="form">
+    <div class="left-col">
+      <section class="panel">
+        <div class="map" id="map">
+          <div class="wreck"></div>
+        </div>
+        <p class="muted" style="margin:8px 2px 0">点击平面图空白处放下新标记，点击标记编辑；右侧圆点：红＝待处理、黄＝待交接、绿＝已入库。</p>
+      </section>
+      <section class="panel">
         <h2>标记信息</h2>
-        <input name="id" type="hidden">
-        <label>编号</label><input name="code" required>
-        <label>类型</label><select name="type"><option value="ceramic">陶片</option><option value="wood">木构件</option><option value="metal">金属件</option><option value="unknown">未知物</option></select>
-        <label>潜次</label><input name="dive" placeholder="例如DIVE-04" required>
-        <label>深度</label><input name="depth" placeholder="例如18.4m" required>
-        <label>朝向</label><input name="orientation" placeholder="例如东北偏北">
-        <label>保存状态</label><input name="condition" placeholder="例如表面附着贝类">
-        <label>备注</label><textarea name="note"></textarea>
-        <div class="toolbar"><button>保存标记</button><button type="button" id="deleteBtn" class="secondary">删除</button></div>
-      </form>
-      <h2 id="listTitle">标记列表</h2>
-      <div id="list" class="list"></div>
+        <form id="markForm" class="form-grid">
+          <input name="id" type="hidden">
+          <div><label>编号</label><input name="code" required></div>
+          <div><label>类型</label><select name="type"><option value="ceramic">陶片</option><option value="wood">木构件</option><option value="metal">金属件</option><option value="unknown">未知物</option></select></div>
+          <div><label>出水潜次</label><input name="dive" placeholder="例如DIVE-04" required></div>
+          <div><label>深度</label><input name="depth" placeholder="例如18.4m" required></div>
+          <div><label>朝向</label><input name="orientation" placeholder="例如东北偏北"></div>
+          <div><label>保存状态</label><input name="condition" placeholder="例如表面附着贝类"></div>
+          <div class="span2"><label>备注</label><textarea name="note"></textarea></div>
+          <div class="span2">
+            <label>补录照片</label>
+            <input type="file" id="photoInput" accept="image/*" multiple>
+            <div class="chips" id="photoChips"></div>
+          </div>
+          <div class="span2 toolbar"><button>保存标记</button><button type="button" id="deleteBtn" class="secondary">删除标记</button></div>
+        </form>
+      </section>
+    </div>
+    <aside class="panel">
+      <div class="filters">
+        <select id="diveFilter"><option value="">全部潜次</option></select>
+        <select id="typeFilter"><option value="">全部类型</option><option value="ceramic">陶片</option><option value="wood">木构件</option><option value="metal">金属件</option><option value="unknown">未知物</option></select>
+      </div>
+      <div class="tabs" id="tabs">
+        <button type="button" class="tab" data-tab="ready">待交接<span class="badge" id="count-ready"></span></button>
+        <button type="button" class="tab" data-tab="pending">异常<span class="badge" id="count-pending"></span></button>
+        <button type="button" class="tab" data-tab="stored">入库<span class="badge" id="count-stored"></span></button>
+      </div>
+      <div id="notice" class="notice hidden"></div>
+      <div id="editor" class="editor hidden">
+        <h3>出水交接单 · <span id="editorCode"></span></h3>
+        <form id="handoverForm">
+          <input type="hidden" name="id">
+          <input type="hidden" name="markId">
+          <label>登记潜次</label><input name="dive" placeholder="例如DIVE-01，须与标记潜次一致" required>
+          <label>袋号</label><input name="bag" placeholder="例如BAG-101，全批唯一" required>
+          <label>保存措施</label><input name="preservation" placeholder="例如淡水脱盐浸泡 / 避光保湿" required>
+          <label>接手人</label><input name="receiver" placeholder="实物接手人" required>
+          <label>登记人</label><input name="registrar" placeholder="本单登记人" required>
+          <div class="toolbar"><button>提交判定</button><button type="button" class="secondary" id="editorCancel">取消</button></div>
+          <p class="muted">每个标记只挂一张未结束单；袋号已占、资料空白或潜次不符时留在待处理。</p>
+        </form>
+      </div>
+      <div id="records" class="records"></div>
     </aside>
   </main>
-  <script>
-    const map = document.querySelector("#map");
-    const form = document.querySelector("#form");
-    const list = document.querySelector("#list");
-    const filter = document.querySelector("#filter");
-    const view = document.querySelector("#view");
-    const listTitle = document.querySelector("#listTitle");
-    const typeNames = { ceramic: "陶片", wood: "木构件", metal: "金属件", unknown: "未知物" };
-    let marks = JSON.parse(localStorage.getItem("zfl30Marks") || "[]");
-    let pending = null;
-    if (!marks.length) {
-      marks = [
-        { id: crypto.randomUUID(), code: "A-017", type: "ceramic", dive: "DIVE-01", x: 42, y: 46, depth: "17.8m", orientation: "东", condition: "边缘残缺", note: "靠近船肋" },
-        { id: crypto.randomUUID(), code: "W-003", type: "wood", dive: "DIVE-02", x: 58, y: 39, depth: "18.2m", orientation: "西北", condition: "稳定", note: "疑似横梁" }
-      ];
-      save();
-    }
-    for (let i = 0; i < 7; i++) {
-      const rib = document.createElement("div");
-      rib.className = "rib";
-      rib.style.left = 28 + i * 7 + "%";
-      map.appendChild(rib);
-    }
-    function save() { localStorage.setItem("zfl30Marks", JSON.stringify(marks)); }
-    function render() {
-      map.querySelectorAll(".marker").forEach(el => el.remove());
-      const filtered = filter.value ? marks.filter(m => m.type === filter.value) : marks;
-      filtered.forEach(mark => {
-        const el = document.createElement("button");
-        el.className = "marker " + mark.type + (mark.id === form.id.value ? " selected" : "");
-        el.style.left = mark.x + "%";
-        el.style.top = mark.y + "%";
-        el.textContent = mark.code.slice(0, 2);
-        el.onclick = event => { event.stopPropagation(); edit(mark.id); };
-        map.appendChild(el);
-      });
-      if (view.value === "timeline") renderTimeline(filtered);
-      else renderList(filtered);
-    }
-    function renderList(data) {
-      listTitle.textContent = "标记列表";
-      list.className = "list";
-      list.innerHTML = data.map(m => '<div class="item '+(m.id===form.id.value?'active':'')+'" data-id="'+m.id+'"><b>'+m.code+'</b> <span class="pill">'+typeNames[m.type]+'</span><div class="muted">'+m.dive+' · '+m.depth+' · '+m.orientation+'</div><div>'+m.condition+'</div></div>').join("");
-      list.querySelectorAll("[data-id]").forEach(el => el.onclick = () => edit(el.dataset.id));
-    }
-    function renderTimeline(data) {
-      listTitle.textContent = "潜次时间线";
-      list.className = "timeline";
-      const groups = data.reduce((map, item) => ((map[item.dive] ||= []).push(item), map), {});
-      list.innerHTML = Object.entries(groups).map(([dive, items]) => '<div class="item"><b>'+dive+'</b><div class="muted">新增'+items.length+'个标记</div>'+items.map(i => '<div>'+i.code+' · '+typeNames[i.type]+'</div>').join("")+'</div>').join("");
-    }
-    function edit(id) {
-      const mark = marks.find(m => m.id === id);
-      if (!mark) return;
-      for (const [key, value] of Object.entries(mark)) if (form[key]) form[key].value = value;
-      pending = { x: mark.x, y: mark.y };
-      render();
-    }
-    map.addEventListener("click", event => {
-      const rect = map.getBoundingClientRect();
-      pending = { x: Number(((event.clientX - rect.left) / rect.width * 100).toFixed(2)), y: Number(((event.clientY - rect.top) / rect.height * 100).toFixed(2)) };
-      form.reset();
-      form.id.value = "";
-      form.code.value = "M-" + String(marks.length + 1).padStart(3, "0");
-      form.dive.value = "DIVE-01";
-      render();
-    });
-    form.onsubmit = event => {
-      event.preventDefault();
-      if (!pending) pending = { x: 50, y: 50 };
-      const data = Object.fromEntries(new FormData(form).entries());
-      if (data.id) Object.assign(marks.find(m => m.id === data.id), data, pending);
-      else marks.push({ ...data, id: crypto.randomUUID(), ...pending });
-      save(); render();
-    };
-    document.querySelector("#deleteBtn").onclick = () => {
-      if (!form.id.value) return;
-      marks = marks.filter(m => m.id !== form.id.value);
-      form.reset(); pending = null; save(); render();
-    };
-    document.querySelector("#exportBtn").onclick = () => {
-      const blob = new Blob([JSON.stringify(marks, null, 2)], { type: "application/json" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob); a.download = "dive-marks.json"; a.click(); URL.revokeObjectURL(a.href);
-    };
-    filter.onchange = render; view.onchange = render;
-    render();
-  </script>
+  <script src="js/archive.js"></script>
+  <script src="js/judge.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/app.js"></script>
 </body>
 </html>
